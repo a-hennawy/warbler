@@ -9,7 +9,7 @@ bcrypt = Bcrypt()
 db = SQLAlchemy()
 
 
-class Follows(db.Model):
+class Follow(db.Model):
     """Connection of a follower <-> followed_user."""
 
     __tablename__ = 'follows'
@@ -17,24 +17,24 @@ class Follows(db.Model):
     user_being_followed_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id', ondelete="cascade"),
-        primary_key=True,
+        primary_key=True
     )
 
     user_following_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id', ondelete="cascade"),
-        primary_key=True,
+        primary_key=True
     )
 
 
-class Likes(db.Model):
+class Like(db.Model):
     """Mapping user likes to warbles."""
 
-    __tablename__ = 'likes' 
+    __tablename__ = 'likes'
 
     id = db.Column(
         db.Integer,
-        primary_key=True
+        primary_key=True,
     )
 
     user_id = db.Column(
@@ -99,15 +99,15 @@ class User(db.Model):
     followers = db.relationship(
         "User",
         secondary="follows",
-        primaryjoin=(Follows.user_being_followed_id == id),
-        secondaryjoin=(Follows.user_following_id == id)
+        primaryjoin=(Follow.user_being_followed_id == id),
+        secondaryjoin=(Follow.user_following_id == id)
     )
 
     following = db.relationship(
         "User",
         secondary="follows",
-        primaryjoin=(Follows.user_following_id == id),
-        secondaryjoin=(Follows.user_being_followed_id == id)
+        primaryjoin=(Follow.user_following_id == id),
+        secondaryjoin=(Follow.user_being_followed_id == id)
     )
 
     likes = db.relationship(
@@ -121,13 +121,15 @@ class User(db.Model):
     def is_followed_by(self, other_user):
         """Is this user followed by `other_user`?"""
 
-        found_user_list = [user for user in self.followers if user == other_user]
+        found_user_list = [
+            user for user in self.followers if user == other_user]
         return len(found_user_list) == 1
 
     def is_following(self, other_user):
         """Is this user following `other_use`?"""
 
-        found_user_list = [user for user in self.following if user == other_user]
+        found_user_list = [
+            user for user in self.following if user == other_user]
         return len(found_user_list) == 1
 
     @classmethod
@@ -202,9 +204,8 @@ class Message(db.Model):
 
 def connect_db(app):
     """Connect this database to provided Flask app.
-
-    You should call this in your Flask app.
-    """
-
-    db.app = app
+     You should call this in your Flask app.
+      """
     db.init_app(app)
+    app.app_context().push()
+    return db
