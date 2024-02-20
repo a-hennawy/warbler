@@ -83,10 +83,12 @@ class User(db.Model):
 
     bio = db.Column(
         db.Text,
+        default="Nothing to see here..."
     )
 
     location = db.Column(
         db.Text,
+        default="Somewhere on Earth!"
     )
 
     password = db.Column(
@@ -163,9 +165,12 @@ class User(db.Model):
         """
 
         user = cls.query.filter_by(username=username).first()
+        import pdb
+        # pdb.set_trace()
 
         if user:
             is_auth = bcrypt.check_password_hash(user.password, password)
+            # pdb.set_trace()
             if is_auth:
                 return user
 

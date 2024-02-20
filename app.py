@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm
+from forms import UserAddForm, LoginForm, MessageForm, EditUserForm
 from models import db, connect_db, User, Message
 
 CURR_USER_KEY = "curr_user"
@@ -114,6 +114,7 @@ def logout():
     """Handle logout of user."""
 
     # IMPLEMENT THIS
+    flash(f"Successfully logged out", "info")
     do_logout()
     return redirect("/")
 
@@ -152,6 +153,8 @@ def users_show(user_id):
                 .order_by(Message.timestamp.desc())
                 .limit(100)
                 .all())
+    import pdb
+    # pdb.set_trace()
     return render_template('users/show.html', user=user, messages=messages)
 
 
@@ -214,6 +217,25 @@ def profile():
     """Update profile for current user."""
 
     # IMPLEMENT THIS
+    user = User.query.get(g.user.id)
+    import pdb
+    # pdb.set_trace()
+    form = EditUserForm(obj=user)
+    form.populate_obj(user)
+
+    if form.validate_on_submit():
+        # form.populate_obj(user)
+
+        user_auth = User.authenticate(user.username, form.password.data)
+        if user_auth:
+            flash("Successfully updated your profile", "success")
+            return redirect("/")
+        else:
+            flash("Wrong password, failed to update user", "danger")
+            return render_template("users/edit.html", form=form, user=user)
+
+    else:
+        return render_template("users/edit.html", form=form, user=user)
 
 
 @app.route('/users/delete', methods=["POST"])
